@@ -8,7 +8,6 @@
 #include "position.hh"
 #include "JsonVisitor.h"
 
-#include <cassert>
 #include <iterator>
 
 namespace facebook {
@@ -57,7 +56,6 @@ JsonVisitor::NodeFieldPrinter::NodeFieldPrinter(
 }
 
 std::string JsonVisitor::NodeFieldPrinter::finishPrinting() {
-  assert(!out_.str().empty());
   out_ << '}';
   auto result(out_.str());
 #ifndef NDEBUG
@@ -91,7 +89,6 @@ void JsonVisitor::NodeFieldPrinter::printSingularBooleanField(
 void JsonVisitor::NodeFieldPrinter::printSingularObjectField(const char *fieldName) {
   printFieldSeparator();
   out_ << '"' << fieldName << R"(":)";
-  assert(!visitor_.printed_.empty());
   out_ << *nextChild_++;
 }
 
@@ -101,7 +98,6 @@ void JsonVisitor::NodeFieldPrinter::printNullableSingularObjectField(
   printFieldSeparator();
   out_ << '"' << fieldName << R"(":)";
   if (value != nullptr) {
-    assert(!visitor_.printed_.empty());
     out_ << *nextChild_++;
   } else {
     out_ << "null";
@@ -148,8 +144,6 @@ void JsonVisitor::endVisitNode(std::string &&str) {
 }
 
 std::string JsonVisitor::getResult() const {
-  assert(printed_.size() == 1);
-  assert(printed_[0].size() == 1);
   return printed_[0][0];
 }
 

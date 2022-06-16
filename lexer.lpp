@@ -66,11 +66,13 @@ notnewline [^\n\r]
   }
 
   {newline} {
-    throw make_error(yyextra->loc, "Unterminated string");
+     make_error(yyextra->loc, "Unterminated string");
+    return yy::GraphQLParserImpl::token::TOK_YYerror;
   }
 
   <<EOF>> {
-    throw make_error(yyextra->loc, "Unterminated string at EOF");
+    make_error(yyextra->loc, "Unterminated string at EOF");
+   return yy::GraphQLParserImpl::token::TOK_YYerror;
   }
 
   {STRINGCHAR}+  {
@@ -95,18 +97,27 @@ notnewline [^\n\r]
     yyextra->str.push_back(ch);
   }
 
-  \\u { throw make_error(yyextra->loc, "bad Unicode escape sequence"); }
-  \\. { throw make_error(yyextra->loc, std::string("bad escape sequence \\") + yytext[1]); }
+  \\u { 
+      make_error(yyextra->loc, "bad Unicode escape sequence");
+     return yy::GraphQLParserImpl::token::TOK_YYerror;
+  }
+
+  \\. { 
+      make_error(yyextra->loc, std::string("bad escape sequence \\") + yytext[1]); 
+     return yy::GraphQLParserImpl::token::TOK_YYerror;
+  }
 
 }
 
 <BLOCK_STRING_STATE>{
   <<EOF>> {
-     throw make_error(yyextra->loc, "Unterminated block string at EOF");
+      make_error(yyextra->loc, "Unterminated block string at EOF");
+     return yy::GraphQLParserImpl::token::TOK_YYerror;
   }
 
   {BADCHAR} {
-     throw make_error(yyextra->loc, std::string("Invalid character ") + yytext[0]);
+    make_error(yyextra->loc, std::string("Invalid character ") + yytext[0]);
+   return yy::GraphQLParserImpl::token::TOK_YYerror;
   }
 
   {GOODCHAR} {
@@ -196,9 +207,10 @@ notnewline [^\n\r]
 <INITIAL,STRING_STATE,LINE_COMMENT_STATE>. {
   char buf[6];
   escape(yytext[0], buf);
-  throw make_error(
+  make_error(
     yyextra->loc,
     std::string("unrecognized character ") + buf);
+ return yy::GraphQLParserImpl::token::TOK_YYerror;
 }
 
 %%
